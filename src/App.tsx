@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useFlowState } from './hooks/useFlowState'
+import { FlowLine } from './components/FlowLine'
 import './App.css'
 
 function App() {
@@ -16,13 +17,7 @@ function App() {
       <header className="app-header">
         <h1>Flow Writer</h1>
         <div className="flow-indicator">
-          <div 
-            className="flow-orb"
-            style={{
-              transform: `scale(${0.8 + flowState * 0.2})`,
-              backgroundColor: `hsl(${120 + flowState * 40}, 70%, 50%)`
-            }}
-          />
+          <FlowLine flowState={flowState} />
         </div>
       </header>
       <main className="writing-area">
