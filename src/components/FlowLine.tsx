@@ -40,12 +40,13 @@ export const FlowLine = ({ flowState }: FlowLineProps) => {
     const animate = () => {
       if (!ctx || !canvas) return;
 
-      // Gradually increase sustained typing counter when typing
+      // Simple decay rate that will return to flat red in 30 seconds (at 60fps)
+      const DECAY_RATE_PER_FRAME = 1 / (30 * 60); // 0.000556 per frame
+      
       if (flowState > 0) {
         sustainedTypingRef.current = Math.min(1, sustainedTypingRef.current + 0.001);
       } else {
-        // Gradually decrease when not typing
-        sustainedTypingRef.current = Math.max(0, sustainedTypingRef.current - 0.0005);
+        sustainedTypingRef.current = Math.max(0, sustainedTypingRef.current - DECAY_RATE_PER_FRAME);
       }
 
       // Use sustained typing value for visual effects
@@ -55,15 +56,16 @@ export const FlowLine = ({ flowState }: FlowLineProps) => {
       targetAmplitude.current = effectiveFlowState * 10;
       targetFrequency.current = 0.01 + effectiveFlowState * 0.025;
       const targetHue = effectiveFlowState * 180; // 0 is red, 180 is blue
-      const targetGlowIntensity = effectiveFlowState * 40; // Increased max glow intensity
-      const targetLineWidth = 1 + effectiveFlowState * 9; // 1px to 10px
+      const targetGlowIntensity = effectiveFlowState * 40;
+      const targetLineWidth = 1 + effectiveFlowState * 9;
 
-      // Much slower interpolation for more gradual changes
-      currentAmplitude.current += (targetAmplitude.current - currentAmplitude.current) * 0.01;
-      currentFrequency.current += (targetFrequency.current - currentFrequency.current) * 0.01;
-      currentHue.current += (targetHue - currentHue.current) * 0.005;
-      currentGlowIntensity.current += (targetGlowIntensity - currentGlowIntensity.current) * 0.005;
-      currentLineWidth.current += (targetLineWidth - currentLineWidth.current) * 0.005;
+      // Faster interpolation when returning to initial state
+      const interpolationFactor = flowState > 0 ? 0.05 : 0.2;
+      currentAmplitude.current += (targetAmplitude.current - currentAmplitude.current) * interpolationFactor;
+      currentFrequency.current += (targetFrequency.current - currentFrequency.current) * interpolationFactor;
+      currentHue.current += (targetHue - currentHue.current) * interpolationFactor;
+      currentGlowIntensity.current += (targetGlowIntensity - currentGlowIntensity.current) * interpolationFactor;
+      currentLineWidth.current += (targetLineWidth - currentLineWidth.current) * interpolationFactor;
 
       // Clear canvas
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -98,6 +100,29 @@ export const FlowLine = ({ flowState }: FlowLineProps) => {
       }
 
       ctx.stroke();
+
+      // Draw glowing white dot at center
+      const centerX = canvas.width / 2;
+      const centerYPos = centerY + 
+        Math.sin(centerX * currentFrequency.current + timeRef.current) * currentAmplitude.current;
+      
+      // Save context state
+      ctx.save();
+      
+      // Set up glow for the dot
+      ctx.shadowColor = `rgba(255, 255, 255, ${0.3 + effectiveFlowState * 0.7})`;
+      ctx.shadowBlur = 20 + effectiveFlowState * 30;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 0;
+
+      // Draw the dot
+      ctx.beginPath();
+      ctx.fillStyle = 'white';
+      ctx.arc(centerX, centerYPos, 4 + effectiveFlowState * 6, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Restore context state
+      ctx.restore();
 
       // Reset shadow for next frame
       ctx.shadowColor = 'transparent';
