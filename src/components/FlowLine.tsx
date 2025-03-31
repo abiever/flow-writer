@@ -14,6 +14,7 @@ export const FlowLine = ({ flowState }: FlowLineProps) => {
   const currentFrequency = useRef(0);
   const currentHue = useRef(0);
   const currentGlowIntensity = useRef(0);
+  const currentLineWidth = useRef(1);
   const sustainedTypingRef = useRef(0);
 
   useEffect(() => {
@@ -52,30 +53,31 @@ export const FlowLine = ({ flowState }: FlowLineProps) => {
 
       // Update target values based on flow state
       targetAmplitude.current = effectiveFlowState * 10;
-      // Halved the frequency values (base from 0.02 to 0.01, range from 0.05 to 0.025)
       targetFrequency.current = 0.01 + effectiveFlowState * 0.025;
       const targetHue = effectiveFlowState * 180; // 0 is red, 180 is blue
-      const targetGlowIntensity = effectiveFlowState * 20;
+      const targetGlowIntensity = effectiveFlowState * 40; // Increased max glow intensity
+      const targetLineWidth = 1 + effectiveFlowState * 9; // 1px to 10px
 
       // Much slower interpolation for more gradual changes
       currentAmplitude.current += (targetAmplitude.current - currentAmplitude.current) * 0.01;
       currentFrequency.current += (targetFrequency.current - currentFrequency.current) * 0.01;
-      currentHue.current += (targetHue - currentHue.current) * 0.005; // Very slow color transition
+      currentHue.current += (targetHue - currentHue.current) * 0.005;
       currentGlowIntensity.current += (targetGlowIntensity - currentGlowIntensity.current) * 0.005;
+      currentLineWidth.current += (targetLineWidth - currentLineWidth.current) * 0.005;
 
       // Clear canvas
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       // Draw glow effect with interpolated values
-      ctx.shadowColor = `hsla(${currentHue.current}, 100%, 50%, ${0.3 + effectiveFlowState * 0.4})`;
+      ctx.shadowColor = `hsla(${currentHue.current}, 100%, 50%, ${0.2 + effectiveFlowState * 0.6})`;
       ctx.shadowBlur = currentGlowIntensity.current;
       ctx.shadowOffsetX = 0;
       ctx.shadowOffsetY = 0;
 
-      // Draw main line with interpolated color
+      // Draw main line with interpolated color and width
       ctx.beginPath();
       ctx.strokeStyle = `hsl(${currentHue.current}, 100%, 50%)`;
-      ctx.lineWidth = 4;
+      ctx.lineWidth = currentLineWidth.current;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
 
