@@ -14,6 +14,7 @@ export const FlowLine = ({ flowState }: FlowLineProps) => {
   const currentFrequency = useRef(0);
   const currentHue = useRef(0);
   const currentGlowIntensity = useRef(0);
+  const sustainedTypingRef = useRef(0);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -38,23 +39,34 @@ export const FlowLine = ({ flowState }: FlowLineProps) => {
     const animate = () => {
       if (!ctx || !canvas) return;
 
-      // Update target values based on flow state
-      targetAmplitude.current = flowState * 15;
-      targetFrequency.current = 0.05 + flowState * 0.1;
-      const targetHue = flowState * 180; // 0 is red, 180 is blue
-      const targetGlowIntensity = flowState * 20;
+      // Gradually increase sustained typing counter when typing
+      if (flowState > 0) {
+        sustainedTypingRef.current = Math.min(1, sustainedTypingRef.current + 0.001);
+      } else {
+        // Gradually decrease when not typing
+        sustainedTypingRef.current = Math.max(0, sustainedTypingRef.current - 0.0005);
+      }
 
-      // Smoother interpolation for more fluid movement
-      currentAmplitude.current += (targetAmplitude.current - currentAmplitude.current) * 0.05;
-      currentFrequency.current += (targetFrequency.current - currentFrequency.current) * 0.05;
-      currentHue.current += (targetHue - currentHue.current) * 0.02; // Slower color transition
-      currentGlowIntensity.current += (targetGlowIntensity - currentGlowIntensity.current) * 0.02;
+      // Use sustained typing value for visual effects
+      const effectiveFlowState = flowState * sustainedTypingRef.current;
+
+      // Update target values based on flow state
+      targetAmplitude.current = effectiveFlowState * 5;
+      targetFrequency.current = 0.05 + effectiveFlowState * 0.1;
+      const targetHue = effectiveFlowState * 180; // 0 is red, 180 is blue
+      const targetGlowIntensity = effectiveFlowState * 20;
+
+      // Much slower interpolation for more gradual changes
+      currentAmplitude.current += (targetAmplitude.current - currentAmplitude.current) * 0.01;
+      currentFrequency.current += (targetFrequency.current - currentFrequency.current) * 0.01;
+      currentHue.current += (targetHue - currentHue.current) * 0.005; // Very slow color transition
+      currentGlowIntensity.current += (targetGlowIntensity - currentGlowIntensity.current) * 0.005;
 
       // Clear canvas
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       // Draw glow effect with interpolated values
-      ctx.shadowColor = `hsla(${currentHue.current}, 100%, 50%, ${0.3 + flowState * 0.4})`;
+      ctx.shadowColor = `hsla(${currentHue.current}, 100%, 50%, ${0.3 + effectiveFlowState * 0.4})`;
       ctx.shadowBlur = currentGlowIntensity.current;
       ctx.shadowOffsetX = 0;
       ctx.shadowOffsetY = 0;
