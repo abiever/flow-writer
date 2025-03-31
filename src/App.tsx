@@ -7,6 +7,7 @@ function App() {
   const [text, setText] = useState('')
   const [flowState, setFlowState] = useState(0)
   const [isTyping, setIsTyping] = useState(false)
+  const [isDarkMode, setIsDarkMode] = useState(true)
   const lastTypingTime = useRef(Date.now())
 
   useEffect(() => {
@@ -35,10 +36,17 @@ function App() {
     setFlowState(Math.min(1, typingSpeed))
   }
 
+  const toggleTheme = () => {
+    setIsDarkMode(!isDarkMode)
+  }
+
   return (
-    <div className="app-container">
+    <div className={`app-container ${isDarkMode ? 'dark' : 'light'}`}>
       <header className="app-header">
         <h1>Flow Writer</h1>
+        <button className="theme-toggle" onClick={toggleTheme}>
+          {isDarkMode ? '☀️' : '🌙'}
+        </button>
       </header>
       <div className="flow-container">
         <FlowLine flowState={flowState} />
