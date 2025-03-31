@@ -12,6 +12,8 @@ export const FlowLine = ({ flowState }: FlowLineProps) => {
   const currentAmplitude = useRef(0);
   const targetFrequency = useRef(0);
   const currentFrequency = useRef(0);
+  const currentHue = useRef(0);
+  const currentGlowIntensity = useRef(0);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -37,25 +39,35 @@ export const FlowLine = ({ flowState }: FlowLineProps) => {
       if (!ctx || !canvas) return;
 
       // Update target values based on flow state
-      targetAmplitude.current = flowState * 30;
-      targetFrequency.current = 0.1 + flowState * 0.2;
+      targetAmplitude.current = flowState * 15;
+      targetFrequency.current = 0.05 + flowState * 0.1;
+      const targetHue = flowState * 180; // 0 is red, 180 is blue
+      const targetGlowIntensity = flowState * 20;
 
-      // Smoothly interpolate current values
-      currentAmplitude.current += (targetAmplitude.current - currentAmplitude.current) * 0.1;
-      currentFrequency.current += (targetFrequency.current - currentFrequency.current) * 0.1;
+      // Smoother interpolation for more fluid movement
+      currentAmplitude.current += (targetAmplitude.current - currentAmplitude.current) * 0.05;
+      currentFrequency.current += (targetFrequency.current - currentFrequency.current) * 0.05;
+      currentHue.current += (targetHue - currentHue.current) * 0.02; // Slower color transition
+      currentGlowIntensity.current += (targetGlowIntensity - currentGlowIntensity.current) * 0.02;
 
       // Clear canvas
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Draw line
+      // Draw glow effect with interpolated values
+      ctx.shadowColor = `hsla(${currentHue.current}, 100%, 50%, ${0.3 + flowState * 0.4})`;
+      ctx.shadowBlur = currentGlowIntensity.current;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 0;
+
+      // Draw main line with interpolated color
       ctx.beginPath();
-      ctx.strokeStyle = `hsl(${120 + flowState * 40}, 70%, 50%)`;
-      ctx.lineWidth = 3;
+      ctx.strokeStyle = `hsl(${currentHue.current}, 100%, 50%)`;
+      ctx.lineWidth = 2;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
 
       const centerY = canvas.height / 2;
-      const points = 100;
+      const points = 200;
       const step = canvas.width / (points - 1);
 
       for (let i = 0; i < points; i++) {
@@ -71,7 +83,12 @@ export const FlowLine = ({ flowState }: FlowLineProps) => {
       }
 
       ctx.stroke();
-      timeRef.current += 0.02; // Controls animation speed
+
+      // Reset shadow for next frame
+      ctx.shadowColor = 'transparent';
+      ctx.shadowBlur = 0;
+
+      timeRef.current += 0.01;
 
       animationFrameRef.current = requestAnimationFrame(animate);
     };

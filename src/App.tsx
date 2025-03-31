@@ -16,10 +16,10 @@ function App() {
     <div className="app-container">
       <header className="app-header">
         <h1>Flow Writer</h1>
-        <div className="flow-indicator">
-          <FlowLine flowState={flowState} />
-        </div>
       </header>
+      <div className="flow-container">
+        <FlowLine flowState={flowState} />
+      </div>
       <main className="writing-area">
         <textarea
           className="writer-input"
