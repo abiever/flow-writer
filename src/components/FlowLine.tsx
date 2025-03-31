@@ -51,8 +51,9 @@ export const FlowLine = ({ flowState }: FlowLineProps) => {
       const effectiveFlowState = flowState * sustainedTypingRef.current;
 
       // Update target values based on flow state
-      targetAmplitude.current = effectiveFlowState * 5;
-      targetFrequency.current = 0.05 + effectiveFlowState * 0.1;
+      targetAmplitude.current = effectiveFlowState * 10;
+      // Halved the frequency values (base from 0.02 to 0.01, range from 0.05 to 0.025)
+      targetFrequency.current = 0.01 + effectiveFlowState * 0.025;
       const targetHue = effectiveFlowState * 180; // 0 is red, 180 is blue
       const targetGlowIntensity = effectiveFlowState * 20;
 
@@ -74,7 +75,7 @@ export const FlowLine = ({ flowState }: FlowLineProps) => {
       // Draw main line with interpolated color
       ctx.beginPath();
       ctx.strokeStyle = `hsl(${currentHue.current}, 100%, 50%)`;
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 4;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
 
