@@ -95,6 +95,7 @@
 /* Tiptap Editor Styles */
 .writing-area {
   width: 100%;
+  height: auto;
   min-height: 200px;
   padding: 2rem;
   font-size: 1.1rem;
@@ -113,7 +114,8 @@
 
 .editor-container {
   position: relative;
-  height: 200px;
+  height: auto;
+  min-height: 200px;
   overflow: hidden;
   width: 100%;
   max-width: 800px;
@@ -121,7 +123,8 @@
   transition: height 0.3s ease;
 }
 
-.editor-container:has(.ProseMirror:not(:empty)) {
+/* Expand height when content exists (not just placeholder) */
+.editor-container:has(.ProseMirror > *:not(.is-editor-empty)) {
   height: 500px;
 }
 
@@ -132,6 +135,11 @@
   overflow-x: hidden;
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE and Edge */
+}
+
+/* Hide scrollbar when only placeholder exists */
+.editor-container:has(.ProseMirror > p:only-child.is-editor-empty) > div {
+  overflow: hidden;
 }
 
 .editor-container > div::-webkit-scrollbar {
@@ -235,4 +243,9 @@
 /* Remove the forced height increase */
 .editor-container:has(.ProseMirror:not(:empty)) .writing-area {
   min-height: 500px;
+}
+
+/* Only enable scrolling when there's actual content (not just placeholder) */
+.editor-container:has(.ProseMirror:has(p:only-child.is-editor-empty)) > div {
+  overflow: hidden;
 }

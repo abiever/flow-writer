@@ -18,11 +18,7 @@ const TabIndentation = Extension.create({
       Tab: ({ editor }) => {
         editor.commands.insertContent('\t')
         return true
-      },
-      'Shift-Tab': ({ editor }) => {
-        // Optional: handle shift+tab to remove indentation
-        return true
-      },
+      }
     }
   },
 })
@@ -38,6 +34,8 @@ const TiptapEditor = ({
   const lastTypingTimeRef = useRef<number>(Date.now())
   const lastContentLengthRef = useRef<number>(0)
   const editorRef = useRef<HTMLDivElement>(null)
+  const lastScrollPositionRef = useRef<number>(0)
+  const shouldCenterCursorRef = useRef<boolean>(false)
 
   const editor = useEditor({
     extensions: [
@@ -82,6 +80,47 @@ const TiptapEditor = ({
         typingTimeoutRef.current = setTimeout(() => {
           onTypingEnd?.()
         }, 1000)
+
+        // Handle cursor visibility
+        if (editorRef.current) {
+          const editorElement = editorRef.current
+          const { clientHeight, scrollTop } = editorElement
+          const cursorPosition = editor.view.coordsAtPos(editor.state.selection.from)
+          const cursorTop = cursorPosition.top
+          const cursorBottom = cursorPosition.bottom
+          const viewportBottom = scrollTop + clientHeight
+          const viewportMiddle = scrollTop + (clientHeight / 2)
+          
+          // Check if cursor is at the end of the content
+          const isAtEnd = editor.state.selection.from === editor.state.doc.content.size
+          
+          // Determine if we should center the cursor based on content length
+          // This threshold can be adjusted based on your needs
+          if (currentLength > 1000 && !shouldCenterCursorRef.current) {
+            shouldCenterCursorRef.current = true
+          }
+          
+          if (shouldCenterCursorRef.current) {
+            // Keep cursor in the middle of the viewport
+            const distanceFromMiddle = cursorTop - viewportMiddle
+            if (Math.abs(distanceFromMiddle) > 50) { // Add some tolerance
+              editorElement.scrollTop += distanceFromMiddle
+            }
+          } else {
+            // Initial behavior: keep cursor visible at the bottom
+            if (isAtEnd && cursorBottom > viewportBottom) {
+              editorElement.scrollTop += (cursorBottom - viewportBottom)
+            }
+            // If cursor is partially hidden at the bottom, adjust to show it
+            else if (cursorBottom > viewportBottom) {
+              editorElement.scrollTop += (cursorBottom - viewportBottom)
+            }
+            // If cursor is partially hidden at the top, adjust to show it
+            else if (cursorTop < scrollTop) {
+              editorElement.scrollTop = cursorTop
+            }
+          }
+        }
       }
     },
   })
