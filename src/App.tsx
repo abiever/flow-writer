@@ -43,7 +43,7 @@ function App() {
   return (
     <div className={`app-container ${isDarkMode ? 'dark' : 'light'}`}>
       <header className="app-header">
-        <h1>Flow Writer</h1>
+        <h1>Wave Writer</h1>
         <button className="theme-toggle" onClick={toggleTheme}>
           {isDarkMode ? '☀️' : '🌙'}
         </button>
