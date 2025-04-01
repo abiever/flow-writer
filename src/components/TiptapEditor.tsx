@@ -69,6 +69,10 @@ const TiptapEditor = ({
         // Trigger typing start if needed
         if (timeDiff > 1000) {
           onTypingStart?.()
+          // Scroll the editor into view when typing begins
+          if (editorRef.current) {
+            editorRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+          }
         }
 
         // Clear existing timeout
