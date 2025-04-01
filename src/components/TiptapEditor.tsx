@@ -14,7 +14,7 @@ interface TiptapEditorProps {
 const TiptapEditor = ({ 
   value, 
   onChange, 
-  placeholder = 'Start writing...',
+  placeholder,
   onTypingStart,
   onTypingEnd
 }: TiptapEditorProps) => {

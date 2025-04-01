@@ -79,7 +79,7 @@ function App() {
       <TiptapEditor
         value={content}
         onChange={setContent}
-        placeholder="Start writing..."
+        placeholder="Start writing to enter your flow state..."
         onTypingStart={handleTypingStart}
         onTypingEnd={handleTypingEnd}
       />
