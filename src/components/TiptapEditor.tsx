@@ -1,4 +1,4 @@
-import { useEditor, EditorContent } from '@tiptap/react'
+import { useEditor, EditorContent, Extension } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
 import { useEffect, useRef } from 'react'
@@ -10,6 +10,22 @@ interface TiptapEditorProps {
   onTypingStart?: () => void
   onTypingEnd?: () => void
 }
+
+const TabIndentation = Extension.create({
+  name: 'tabIndentation',
+  addKeyboardShortcuts() {
+    return {
+      Tab: ({ editor }) => {
+        editor.commands.insertContent('\t')
+        return true
+      },
+      'Shift-Tab': ({ editor }) => {
+        // Optional: handle shift+tab to remove indentation
+        return true
+      },
+    }
+  },
+})
 
 const TiptapEditor = ({ 
   value, 
@@ -28,6 +44,7 @@ const TiptapEditor = ({
       Placeholder.configure({
         placeholder: placeholder,
       }),
+      TabIndentation,
     ],
     content: value,
     editorProps: {
