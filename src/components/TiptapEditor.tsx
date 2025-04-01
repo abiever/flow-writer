@@ -1,7 +1,8 @@
 import { useEditor, EditorContent, Extension } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
-import { useEffect, useRef } from 'react'
+import TextAlign from '@tiptap/extension-text-align'
+import { useEffect, useRef, forwardRef, useImperativeHandle } from 'react'
 
 interface TiptapEditorProps {
   value: string
@@ -23,13 +24,13 @@ const TabIndentation = Extension.create({
   },
 })
 
-const TiptapEditor = ({ 
+const TiptapEditor = forwardRef(({ 
   value, 
   onChange, 
   placeholder,
   onTypingStart,
   onTypingEnd
-}: TiptapEditorProps) => {
+}: TiptapEditorProps, ref) => {
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout>>()
   const lastTypingTimeRef = useRef<number>(Date.now())
   const lastContentLengthRef = useRef<number>(0)
@@ -44,6 +45,9 @@ const TiptapEditor = ({
         placeholder: placeholder,
       }),
       TabIndentation,
+      TextAlign.configure({
+        types: ['heading', 'paragraph'],
+      }),
     ],
     content: value,
     editorProps: {
@@ -99,7 +103,6 @@ const TiptapEditor = ({
           const isAtEnd = editor.state.selection.from === editor.state.doc.content.size
           
           // Determine if we should center the cursor based on content length
-          // This threshold can be adjusted based on your needs
           if (currentLength > 1000 && !shouldCenterCursorRef.current) {
             shouldCenterCursorRef.current = true
           }
@@ -107,7 +110,7 @@ const TiptapEditor = ({
           if (shouldCenterCursorRef.current) {
             // Keep cursor in the middle of the viewport
             const distanceFromMiddle = cursorTop - viewportMiddle
-            if (Math.abs(distanceFromMiddle) > 50) { // Add some tolerance
+            if (Math.abs(distanceFromMiddle) > 50) {
               editorElement.scrollTop += distanceFromMiddle
             }
           } else {
@@ -128,6 +131,9 @@ const TiptapEditor = ({
       }
     },
   })
+
+  // Expose the editor instance through the ref
+  useImperativeHandle(ref, () => editor, [editor])
 
   useEffect(() => {
     if (editor && value !== editor.getHTML()) {
@@ -151,6 +157,6 @@ const TiptapEditor = ({
       </div>
     </div>
   )
-}
+})
 
 export default TiptapEditor 

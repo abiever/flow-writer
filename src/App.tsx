@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import './App.css'
 import { FlowLine } from './components/FlowLine'
 import TiptapEditor from './components/TiptapEditor'
+import FormattingMenu from './components/FormattingMenu'
 
 function App() {
   const [content, setContent] = useState('')
@@ -10,6 +11,7 @@ function App() {
   const [isDarkMode, setIsDarkMode] = useState(true)
   const lastContentLengthRef = useRef<number>(0)
   const decayIntervalRef = useRef<ReturnType<typeof setInterval>>()
+  const editorRef = useRef<any>(null)
 
   const handleTypingStart = () => {
     setIsTyping(true)
@@ -76,13 +78,19 @@ function App() {
       <div className="flow-container">
         <FlowLine flowState={flowState} />
       </div>
-      <TiptapEditor
-        value={content}
-        onChange={setContent}
-        placeholder="Start writing to enter your flow state..."
-        onTypingStart={handleTypingStart}
-        onTypingEnd={handleTypingEnd}
-      />
+      <div className="formatting-container">
+        <FormattingMenu editor={editorRef.current} />
+      </div>
+      <div className="editor-wrapper">
+        <TiptapEditor
+          ref={editorRef}
+          value={content}
+          onChange={setContent}
+          placeholder="Start writing to enter your flow state..."
+          onTypingStart={handleTypingStart}
+          onTypingEnd={handleTypingEnd}
+        />
+      </div>
     </div>
   )
 }

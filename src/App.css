@@ -112,14 +112,86 @@
   transition: min-height 0.3s ease;
 }
 
+.formatting-container {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto 1rem;
+  background-color: var(--bg-primary);
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.dark .formatting-container {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.formatting-menu {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--bg-secondary);
+  flex-wrap: wrap;
+  position: relative;
+  z-index: 10;
+}
+
+.formatting-menu button {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.5rem;
+}
+
+.formatting-menu button:hover {
+  background-color: var(--bg-hover);
+}
+
+.formatting-menu button.is-active {
+  background-color: var(--accent-color);
+  color: var(--text-inverse);
+  border-color: var(--accent-color);
+}
+
+.formatting-menu button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: var(--bg-secondary);
+}
+
+.formatting-menu button:disabled:hover {
+  background-color: var(--bg-secondary);
+}
+
+.editor-wrapper {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  background-color: var(--bg-primary);
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.dark .editor-wrapper {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
 .editor-container {
   position: relative;
   height: auto;
   min-height: 200px;
   overflow: hidden;
   width: 100%;
-  max-width: 800px;
-  margin: 0 auto;
   transition: height 0.3s ease;
 }
 
