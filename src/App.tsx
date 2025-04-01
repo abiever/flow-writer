@@ -1,60 +1,87 @@
 import { useState, useEffect, useRef } from 'react'
-import { FlowLine } from './components/FlowLine'
-import { WritingArea } from './components/WritingArea'
 import './App.css'
+import { FlowLine } from './components/FlowLine'
+import TiptapEditor from './components/TiptapEditor'
 
 function App() {
-  const [text, setText] = useState('')
-  const [flowState, setFlowState] = useState(0)
+  const [content, setContent] = useState('')
   const [isTyping, setIsTyping] = useState(false)
+  const [flowState, setFlowState] = useState(0)
   const [isDarkMode, setIsDarkMode] = useState(true)
-  const lastTypingTime = useRef(Date.now())
+  const lastContentLengthRef = useRef<number>(0)
+  const decayIntervalRef = useRef<ReturnType<typeof setInterval>>()
 
+  const handleTypingStart = () => {
+    setIsTyping(true)
+    // Clear any existing decay interval
+    if (decayIntervalRef.current) {
+      clearInterval(decayIntervalRef.current)
+    }
+    // Don't reset flow state, just let it continue from current value
+  }
+
+  const handleTypingEnd = () => {
+    setIsTyping(false)
+    // Set up a smooth decay interval
+    if (decayIntervalRef.current) {
+      clearInterval(decayIntervalRef.current)
+    }
+    decayIntervalRef.current = setInterval(() => {
+      setFlowState(prev => {
+        const newState = Math.max(0, prev - 0.002) // Slower decay rate
+        if (newState === 0) {
+          clearInterval(decayIntervalRef.current)
+        }
+        return newState
+      })
+    }, 50) // Update every 50ms for smooth decay
+  }
+
+  // Update flow state based on typing speed
   useEffect(() => {
-    const checkTypingStatus = () => {
-      const now = Date.now()
-      const timeSinceLastType = now - lastTypingTime.current
-      
-      if (timeSinceLastType > 1000) { // If no typing for 1 second
-        setIsTyping(false)
-        // Decay flow state
-        setFlowState(prev => Math.max(0, prev - 0.01))
+    if (isTyping) {
+      const currentLength = content.length
+      const lengthDiff = currentLength - lastContentLengthRef.current
+      lastContentLengthRef.current = currentLength
+
+      if (lengthDiff > 0) {
+        // Calculate new flow state based on typing speed
+        const typingSpeed = Math.min(1, lengthDiff / 10) // Adjust this divisor to change sensitivity
+        setFlowState(prev => Math.min(1, prev + typingSpeed * 0.05)) // Slower increase rate
       }
     }
+  }, [content, isTyping])
 
-    const interval = setInterval(checkTypingStatus, 100)
-    return () => clearInterval(interval)
+  // Cleanup interval on unmount
+  useEffect(() => {
+    return () => {
+      if (decayIntervalRef.current) {
+        clearInterval(decayIntervalRef.current)
+      }
+    }
   }, [])
-
-  const handleTextChange = (newText: string) => {
-    setText(newText)
-    setIsTyping(true)
-    lastTypingTime.current = Date.now()
-    
-    // Calculate flow state based on typing speed
-    const typingSpeed = newText.length / 100 // Normalize to 0-1 range
-    setFlowState(Math.min(1, typingSpeed))
-  }
 
   const toggleTheme = () => {
     setIsDarkMode(!isDarkMode)
   }
 
   return (
-    <div className={`app-container ${isDarkMode ? 'dark' : 'light'}`}>
-      <header className="app-header">
-        <h1>Wave Writer</h1>
+    <div className={`app-container ${isDarkMode ? 'dark' : ''}`}>
+      <div className="app-header">
+        <h1>Flow Writer</h1>
         <button className="theme-toggle" onClick={toggleTheme}>
           {isDarkMode ? '☀️' : '🌙'}
         </button>
-      </header>
+      </div>
       <div className="flow-container">
         <FlowLine flowState={flowState} />
       </div>
-      <WritingArea
-        value={text}
-        onChange={handleTextChange}
-        placeholder="Start writing to enter your flow state..."
+      <TiptapEditor
+        value={content}
+        onChange={setContent}
+        placeholder="Start writing..."
+        onTypingStart={handleTypingStart}
+        onTypingEnd={handleTypingEnd}
       />
     </div>
   )
