@@ -128,8 +128,14 @@
 .editor-container > div {
   width: 100%;
   height: 100%;
-  overflow-y: auto;
+  overflow-y: scroll;
   overflow-x: hidden;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.editor-container > div::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
 }
 
 .editor-container::before {
