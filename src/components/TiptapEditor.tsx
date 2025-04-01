@@ -37,6 +37,9 @@ const TiptapEditor = ({
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout>>()
   const lastTypingTimeRef = useRef<number>(Date.now())
   const lastContentLengthRef = useRef<number>(0)
+  const editorRef = useRef<HTMLDivElement>(null)
+  const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout>>()
+  const lastScrollPositionRef = useRef<number>(0)
 
   const editor = useEditor({
     extensions: [
@@ -81,6 +84,38 @@ const TiptapEditor = ({
         typingTimeoutRef.current = setTimeout(() => {
           onTypingEnd?.()
         }, 1000)
+
+        // Handle scrolling
+        if (editorRef.current) {
+          // Clear any existing scroll timeout
+          if (scrollTimeoutRef.current) {
+            clearTimeout(scrollTimeoutRef.current)
+          }
+
+          // Set a small delay to ensure the content is rendered
+          scrollTimeoutRef.current = setTimeout(() => {
+            const editorElement = editorRef.current
+            if (editorElement) {
+              const { scrollHeight, clientHeight, scrollTop } = editorElement
+              const maxScroll = scrollHeight - clientHeight
+              
+              // Check if cursor is at the end of the content
+              const { from } = editor.state.selection
+              const isAtEnd = from === editor.state.doc.content.size
+              
+              // Only scroll if we're at the end of the content
+              if (isAtEnd) {
+                // Smooth scroll to the bottom
+                editorElement.scrollTo({
+                  top: maxScroll,
+                  behavior: 'smooth'
+                })
+              }
+              
+              lastScrollPositionRef.current = scrollTop
+            }
+          }, 50)
+        }
       }
     },
   })
@@ -91,8 +126,24 @@ const TiptapEditor = ({
     }
   }, [value, editor])
 
+  // Cleanup timeouts on unmount
+  useEffect(() => {
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current)
+      }
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current)
+      }
+    }
+  }, [])
+
   return (
-    <EditorContent editor={editor} />
+    <div className="editor-container">
+      <div ref={editorRef}>
+        <EditorContent editor={editor} />
+      </div>
+    </div>
   )
 }
 
