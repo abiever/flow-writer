@@ -8,14 +8,38 @@ import ListOrderedIcon from 'remixicon-react/ListOrderedIcon'
 import AlignLeftIcon from 'remixicon-react/AlignLeftIcon'
 import AlignCenterIcon from 'remixicon-react/AlignCenterIcon'
 import AlignRightIcon from 'remixicon-react/AlignRightIcon'
+import { useState, useEffect, useRef } from 'react'
 
 interface FormattingMenuProps {
   editor: Editor | null
 }
 
 const FormattingMenu = ({ editor }: FormattingMenuProps) => {
+  const [isVisible, setIsVisible] = useState(true)
+  const timeoutRef = useRef<ReturnType<typeof setTimeout>>()
+
+  const handleMouseMove = () => {
+    setIsVisible(true)
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current)
+    }
+    timeoutRef.current = setTimeout(() => {
+      setIsVisible(false)
+    }, 5000)
+  }
+
+  useEffect(() => {
+    window.addEventListener('mousemove', handleMouseMove)
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove)
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+      }
+    }
+  }, [])
+
   return (
-    <div className="formatting-menu">
+    <div className={`formatting-menu ${isVisible ? 'visible' : 'hidden'}`}>
       <button
         onClick={() => editor?.chain().focus().toggleBold().run()}
         className={editor?.isActive('bold') ? 'is-active' : ''}

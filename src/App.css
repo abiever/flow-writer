@@ -75,7 +75,7 @@
 .flow-container {
   width: 100vw;
   height: 100px;
-  margin-bottom: 2rem;
+  /* margin-bottom: 2rem; */
   padding: 1rem 0;
   overflow: hidden;
   /* transition: background-color 0.3s ease, box-shadow 0.3s ease; */
@@ -117,13 +117,7 @@
   max-width: 800px;
   margin: 0 auto 1rem;
   background-color: var(--bg-primary);
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   overflow: hidden;
-}
-
-.dark .formatting-container {
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .formatting-menu {
@@ -135,6 +129,20 @@
   flex-wrap: wrap;
   position: relative;
   z-index: 10;
+  justify-content: center;
+  align-items: center;
+  opacity: 1;
+  transition: opacity 1s ease;
+}
+
+.formatting-menu.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.formatting-menu.visible {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .formatting-menu button {
