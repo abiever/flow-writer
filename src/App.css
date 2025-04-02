@@ -365,3 +365,25 @@
 .editor-container:has(.ProseMirror:has(p:only-child.is-editor-empty)) > div {
   overflow: hidden;
 }
+
+@keyframes wordGlow {
+  0% {
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.5),
+                 0 0 10px rgba(255, 255, 255, 0.3),
+                 0 0 15px rgba(255, 255, 255, 0.2);
+  }
+  50% {
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.8),
+                 0 0 20px rgba(255, 255, 255, 0.6),
+                 0 0 30px rgba(255, 255, 255, 0.4);
+  }
+  100% {
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.5),
+                 0 0 10px rgba(255, 255, 255, 0.3),
+                 0 0 15px rgba(255, 255, 255, 0.2);
+  }
+}
+
+.word-glow {
+  animation: wordGlow 2s ease-in-out;
+}

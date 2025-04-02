@@ -1,4 +1,4 @@
-import { useEditor, EditorContent, Extension } from '@tiptap/react'
+import { useEditor, EditorContent, Extension, Mark } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
 import TextAlign from '@tiptap/extension-text-align'
@@ -29,6 +29,21 @@ const TabIndentation = Extension.create({
   },
 })
 
+// Create a custom mark for the glow effect
+const GlowMark = Mark.create({
+  name: 'glow',
+  renderHTML() {
+    return ['span', { class: 'word-glow' }, 0]
+  },
+  parseHTML() {
+    return [
+      {
+        tag: 'span[class="word-glow"]'
+      }
+    ]
+  }
+})
+
 const TiptapEditor = forwardRef(({ 
   value, 
   onChange, 
@@ -45,6 +60,48 @@ const TiptapEditor = forwardRef(({
   const editorRef = useRef<HTMLDivElement>(null)
   const shouldCenterCursorRef = useRef<boolean>(false)
   const [wordCount, setWordCount] = useState(0)
+  const lastMilestoneRef = useRef<number>(0)
+
+  const checkWordMilestone = (count: number) => {
+    const milestone = 50 // Every 50 words
+    const currentMilestone = Math.floor(count / milestone)
+    
+    if (currentMilestone > lastMilestoneRef.current) {
+      lastMilestoneRef.current = currentMilestone
+      return true
+    }
+    return false
+  }
+
+  const applyGlowToLastWord = () => {
+    if (!editor) return
+
+    const { state } = editor
+    const { selection } = state
+    const { from } = selection
+
+    // Find the start of the last word
+    let wordStart = from
+    while (wordStart > 0 && !/\s/.test(state.doc.textBetween(wordStart - 1, wordStart))) {
+      wordStart--
+    }
+
+    // Find the end of the last word
+    let wordEnd = from
+    while (wordEnd < state.doc.content.size && !/\s/.test(state.doc.textBetween(wordEnd, wordEnd + 1))) {
+      wordEnd++
+    }
+
+    // Apply the glow effect
+    editor.commands.setTextSelection({ from: wordStart, to: wordEnd })
+    editor.commands.setMark('glow')
+
+    // Remove the glow effect after animation
+    setTimeout(() => {
+      editor.commands.setTextSelection({ from: wordEnd, to: wordEnd })
+      editor.commands.unsetMark('glow')
+    }, 2000)
+  }
 
   const editor = useEditor({
     extensions: [
@@ -57,6 +114,7 @@ const TiptapEditor = forwardRef(({
         types: ['heading', 'paragraph'],
       }),
       CharacterCount,
+      GlowMark,
     ],
     content: value,
     editorProps: {
@@ -72,6 +130,11 @@ const TiptapEditor = forwardRef(({
       const count = editor.storage.characterCount.words()
       setWordCount(count)
       onWordCountChange?.(count)
+
+      // Check for word count milestone
+      if (checkWordMilestone(count)) {
+        applyGlowToLastWord()
+      }
 
       // Calculate typing speed
       const currentLength = html.length
