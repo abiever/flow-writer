@@ -3,8 +3,7 @@ import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
 import TextAlign from '@tiptap/extension-text-align'
 import CharacterCount from '@tiptap/extension-character-count'
-import { useEffect, useRef, forwardRef, useImperativeHandle, useState } from 'react'
-import FormattingMenu from './FormattingMenu'
+import { useEffect, useRef, forwardRef, useImperativeHandle } from 'react'
 
 interface TiptapEditorProps {
   value: string
@@ -50,8 +49,6 @@ const TiptapEditor = forwardRef(({
   placeholder,
   onTypingStart,
   onTypingEnd,
-  isDarkMode,
-  onThemeToggle,
   onWordCountChange
 }: TiptapEditorProps, ref) => {
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout>>()
@@ -59,7 +56,6 @@ const TiptapEditor = forwardRef(({
   const lastContentLengthRef = useRef<number>(0)
   const editorRef = useRef<HTMLDivElement>(null)
   const shouldCenterCursorRef = useRef<boolean>(false)
-  const [wordCount, setWordCount] = useState(0)
   const lastMilestoneRef = useRef<number>(0)
 
   const checkWordMilestone = (count: number) => {
@@ -128,7 +124,6 @@ const TiptapEditor = forwardRef(({
 
       // Update word count
       const count = editor.storage.characterCount.words()
-      setWordCount(count)
       onWordCountChange?.(count)
 
       // Check for word count milestone
@@ -232,12 +227,6 @@ const TiptapEditor = forwardRef(({
       <div ref={editorRef}>
         <EditorContent editor={editor} />
       </div>
-      <FormattingMenu 
-        editor={editor} 
-        isDarkMode={isDarkMode}
-        onThemeToggle={onThemeToggle}
-        wordCount={wordCount}
-      />
     </div>
   )
 })
