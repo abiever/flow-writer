@@ -198,6 +198,14 @@
   overflow: hidden;
 }
 
+.editor-wrapper.cursor-hidden {
+  cursor: none;
+}
+
+.editor-wrapper.cursor-hidden * {
+  cursor: none !important;
+}
+
 .dark .editor-wrapper {
   background-color: var(--bg-primary);
 }

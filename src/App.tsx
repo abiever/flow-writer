@@ -9,9 +9,31 @@ function App() {
   const [isTyping, setIsTyping] = useState(false)
   const [flowState, setFlowState] = useState(0)
   const [isDarkMode, setIsDarkMode] = useState(true)
+  const [isCursorHidden, setIsCursorHidden] = useState(false)
   const lastContentLengthRef = useRef<number>(0)
   const decayIntervalRef = useRef<ReturnType<typeof setInterval>>()
   const editorRef = useRef<any>(null)
+  const cursorTimeoutRef = useRef<ReturnType<typeof setTimeout>>()
+
+  const handleMouseMove = () => {
+    setIsCursorHidden(false)
+    if (cursorTimeoutRef.current) {
+      clearTimeout(cursorTimeoutRef.current)
+    }
+    cursorTimeoutRef.current = setTimeout(() => {
+      setIsCursorHidden(true)
+    }, 5000)
+  }
+
+  useEffect(() => {
+    window.addEventListener('mousemove', handleMouseMove)
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove)
+      if (cursorTimeoutRef.current) {
+        clearTimeout(cursorTimeoutRef.current)
+      }
+    }
+  }, [])
 
   const handleTypingStart = () => {
     setIsTyping(true)
@@ -82,7 +104,7 @@ function App() {
           onThemeToggle={toggleTheme}
         />
       </div>
-      <div className="editor-wrapper">
+      <div className={`editor-wrapper ${isCursorHidden ? 'cursor-hidden' : ''}`}>
         <TiptapEditor
           ref={editorRef}
           value={content}
