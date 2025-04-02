@@ -59,7 +59,7 @@ const TiptapEditor = forwardRef(({
   const lastMilestoneRef = useRef<number>(0)
 
   const checkWordMilestone = (count: number) => {
-    const milestone = 50 // Every 50 words
+    const milestone = 100 // Every 100 words
     const currentMilestone = Math.floor(count / milestone)
     
     if (currentMilestone > lastMilestoneRef.current) {
@@ -75,6 +75,9 @@ const TiptapEditor = forwardRef(({
     const { state } = editor
     const { selection } = state
     const { from } = selection
+
+    // Save the current cursor position
+    const savedCursorPos = from
 
     // Find the start of the last word
     let wordStart = from
@@ -92,9 +95,12 @@ const TiptapEditor = forwardRef(({
     editor.commands.setTextSelection({ from: wordStart, to: wordEnd })
     editor.commands.setMark('glow')
 
+    // Immediately restore the cursor position
+    editor.commands.setTextSelection({ from: savedCursorPos, to: savedCursorPos })
+
     // Remove the glow effect after animation
     setTimeout(() => {
-      editor.commands.setTextSelection({ from: wordEnd, to: wordEnd })
+      // Simply remove the glow mark from the current selection
       editor.commands.unsetMark('glow')
     }, 2000)
   }
