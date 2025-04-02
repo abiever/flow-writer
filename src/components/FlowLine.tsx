@@ -16,6 +16,7 @@ export const FlowLine = ({ flowState }: FlowLineProps) => {
   const currentGlowIntensity = useRef(0);
   const currentLineWidth = useRef(1);
   const sustainedTypingRef = useRef(0);
+  const lineExtensionProgress = useRef(0);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -42,11 +43,16 @@ export const FlowLine = ({ flowState }: FlowLineProps) => {
 
       // Simple decay rate that will return to flat red in 30 seconds (at 60fps)
       const DECAY_RATE_PER_FRAME = 1 / (30 * 60); // 0.000556 per frame
+      const LINE_EXTENSION_RATE = 0.005; // 0.5% per frame - much slower extension/retraction
       
       if (flowState > 0) {
         sustainedTypingRef.current = Math.min(1, sustainedTypingRef.current + 0.001);
+        // Extend the line when typing is sustained
+        lineExtensionProgress.current = Math.min(1, lineExtensionProgress.current + LINE_EXTENSION_RATE);
       } else {
         sustainedTypingRef.current = Math.max(0, sustainedTypingRef.current - DECAY_RATE_PER_FRAME);
+        // Retract the line when typing stops - use the same rate as extension for smoothness
+        lineExtensionProgress.current = Math.max(0, lineExtensionProgress.current - LINE_EXTENSION_RATE);
       }
 
       // Use sustained typing value for visual effects
@@ -84,15 +90,21 @@ export const FlowLine = ({ flowState }: FlowLineProps) => {
       ctx.lineJoin = 'round';
 
       const centerY = canvas.height / 2;
+      const centerX = canvas.width / 2;
       const points = 200;
       const step = canvas.width / (points - 1);
 
-      for (let i = 0; i < points; i++) {
+      // Calculate the visible portion of the line based on extension progress
+      const visiblePoints = Math.floor(points * lineExtensionProgress.current);
+      const startIndex = Math.floor((points - visiblePoints) / 2);
+      const endIndex = startIndex + visiblePoints;
+
+      for (let i = startIndex; i < endIndex; i++) {
         const x = i * step;
         const y = centerY + 
           Math.sin(x * currentFrequency.current + timeRef.current) * currentAmplitude.current;
         
-        if (i === 0) {
+        if (i === startIndex) {
           ctx.moveTo(x, y);
         } else {
           ctx.lineTo(x, y);
@@ -102,7 +114,6 @@ export const FlowLine = ({ flowState }: FlowLineProps) => {
       ctx.stroke();
 
       // Draw glowing white dot at center
-      const centerX = canvas.width / 2;
       const centerYPos = centerY + 
         Math.sin(centerX * currentFrequency.current + timeRef.current) * currentAmplitude.current;
       
