@@ -10,6 +10,7 @@ function App() {
   const [flowState, setFlowState] = useState(0)
   const [isDarkMode, setIsDarkMode] = useState(true)
   const [isCursorHidden, setIsCursorHidden] = useState(false)
+  const [wordCount, setWordCount] = useState(0)
   const lastContentLengthRef = useRef<number>(0)
   const decayIntervalRef = useRef<ReturnType<typeof setInterval>>()
   const editorRef = useRef<any>(null)
@@ -102,6 +103,7 @@ function App() {
           editor={editorRef.current} 
           isDarkMode={isDarkMode}
           onThemeToggle={toggleTheme}
+          wordCount={wordCount}
         />
       </div>
       <div className={`editor-wrapper ${isCursorHidden ? 'cursor-hidden' : ''}`}>
@@ -112,6 +114,9 @@ function App() {
           placeholder="Start writing to enter your flow state..."
           onTypingStart={handleTypingStart}
           onTypingEnd={handleTypingEnd}
+          isDarkMode={isDarkMode}
+          onThemeToggle={toggleTheme}
+          onWordCountChange={setWordCount}
         />
       </div>
     </div>

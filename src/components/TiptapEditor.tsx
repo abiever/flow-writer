@@ -2,7 +2,9 @@ import { useEditor, EditorContent, Extension } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
 import TextAlign from '@tiptap/extension-text-align'
-import { useEffect, useRef, forwardRef, useImperativeHandle } from 'react'
+import CharacterCount from '@tiptap/extension-character-count'
+import { useEffect, useRef, forwardRef, useImperativeHandle, useState } from 'react'
+import FormattingMenu from './FormattingMenu'
 
 interface TiptapEditorProps {
   value: string
@@ -10,6 +12,9 @@ interface TiptapEditorProps {
   placeholder?: string
   onTypingStart?: () => void
   onTypingEnd?: () => void
+  isDarkMode: boolean
+  onThemeToggle: () => void
+  onWordCountChange?: (count: number) => void
 }
 
 const TabIndentation = Extension.create({
@@ -29,14 +34,17 @@ const TiptapEditor = forwardRef(({
   onChange, 
   placeholder,
   onTypingStart,
-  onTypingEnd
+  onTypingEnd,
+  isDarkMode,
+  onThemeToggle,
+  onWordCountChange
 }: TiptapEditorProps, ref) => {
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout>>()
   const lastTypingTimeRef = useRef<number>(Date.now())
   const lastContentLengthRef = useRef<number>(0)
   const editorRef = useRef<HTMLDivElement>(null)
-  const lastScrollPositionRef = useRef<number>(0)
   const shouldCenterCursorRef = useRef<boolean>(false)
+  const [wordCount, setWordCount] = useState(0)
 
   const editor = useEditor({
     extensions: [
@@ -48,6 +56,7 @@ const TiptapEditor = forwardRef(({
       TextAlign.configure({
         types: ['heading', 'paragraph'],
       }),
+      CharacterCount,
     ],
     content: value,
     editorProps: {
@@ -58,6 +67,11 @@ const TiptapEditor = forwardRef(({
     onUpdate: ({ editor }) => {
       const html = editor.getHTML()
       onChange(html)
+
+      // Update word count
+      const count = editor.storage.characterCount.words()
+      setWordCount(count)
+      onWordCountChange?.(count)
 
       // Calculate typing speed
       const currentLength = html.length
@@ -155,6 +169,12 @@ const TiptapEditor = forwardRef(({
       <div ref={editorRef}>
         <EditorContent editor={editor} />
       </div>
+      <FormattingMenu 
+        editor={editor} 
+        isDarkMode={isDarkMode}
+        onThemeToggle={onThemeToggle}
+        wordCount={wordCount}
+      />
     </div>
   )
 })
