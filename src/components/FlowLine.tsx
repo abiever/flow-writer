@@ -17,6 +17,7 @@ export const FlowLine = ({ flowState }: FlowLineProps) => {
   const currentLineWidth = useRef(1);
   const sustainedTypingRef = useRef(0);
   const lineExtensionProgress = useRef(0);
+  const dotSizeProgress = useRef(0);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -44,15 +45,24 @@ export const FlowLine = ({ flowState }: FlowLineProps) => {
       // Simple decay rate that will return to flat red in 30 seconds (at 60fps)
       const DECAY_RATE_PER_FRAME = 1 / (30 * 60); // 0.000556 per frame
       const LINE_EXTENSION_RATE = 0.005; // 0.5% per frame - much slower extension/retraction
+      const DOT_SIZE_RATE = 0.003; // 0.3% per frame - even slower dot size animation
       
       if (flowState > 0) {
         sustainedTypingRef.current = Math.min(1, sustainedTypingRef.current + 0.001);
-        // Extend the line when typing is sustained
-        lineExtensionProgress.current = Math.min(1, lineExtensionProgress.current + LINE_EXTENSION_RATE);
+        // First animate the dot size
+        dotSizeProgress.current = Math.min(1, dotSizeProgress.current + DOT_SIZE_RATE);
+        // Only start extending the line once the dot has reached minimum size
+        if (dotSizeProgress.current >= 1) {
+          lineExtensionProgress.current = Math.min(1, lineExtensionProgress.current + LINE_EXTENSION_RATE);
+        }
       } else {
         sustainedTypingRef.current = Math.max(0, sustainedTypingRef.current - DECAY_RATE_PER_FRAME);
-        // Retract the line when typing stops - use the same rate as extension for smoothness
+        // Retract the line when typing stops
         lineExtensionProgress.current = Math.max(0, lineExtensionProgress.current - LINE_EXTENSION_RATE);
+        // Only start shrinking the dot once the line is fully retracted
+        if (lineExtensionProgress.current <= 0) {
+          dotSizeProgress.current = Math.max(0, dotSizeProgress.current - DOT_SIZE_RATE);
+        }
       }
 
       // Use sustained typing value for visual effects
@@ -126,10 +136,12 @@ export const FlowLine = ({ flowState }: FlowLineProps) => {
       ctx.shadowOffsetX = 0;
       ctx.shadowOffsetY = 0;
 
-      // Draw the dot
+      // Draw the dot with size animation
       ctx.beginPath();
       ctx.fillStyle = 'white';
-      ctx.arc(centerX, centerYPos, 4 + effectiveFlowState * 6, 0, Math.PI * 2);
+      const maxDotSize = 10;
+      const dotSize = maxDotSize * dotSizeProgress.current + effectiveFlowState * 6;
+      ctx.arc(centerX, centerYPos, dotSize, 0, Math.PI * 2);
       ctx.fill();
 
       // Restore context state
