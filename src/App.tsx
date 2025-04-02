@@ -71,15 +71,16 @@ function App() {
     <div className={`app-container ${isDarkMode ? 'dark' : ''}`}>
       <div className="app-header">
         <h1>Flow Writer</h1>
-        <button className="theme-toggle" onClick={toggleTheme}>
-          {isDarkMode ? '☀️' : '🌙'}
-        </button>
       </div>
       <div className="flow-container">
         <FlowLine flowState={flowState} />
       </div>
       <div className="formatting-container">
-        <FormattingMenu editor={editorRef.current} />
+        <FormattingMenu 
+          editor={editorRef.current} 
+          isDarkMode={isDarkMode}
+          onThemeToggle={toggleTheme}
+        />
       </div>
       <div className="editor-wrapper">
         <TiptapEditor

@@ -8,13 +8,17 @@ import ListOrderedIcon from 'remixicon-react/ListOrderedIcon'
 import AlignLeftIcon from 'remixicon-react/AlignLeftIcon'
 import AlignCenterIcon from 'remixicon-react/AlignCenterIcon'
 import AlignRightIcon from 'remixicon-react/AlignRightIcon'
+import SunLineIcon from 'remixicon-react/SunLineIcon'
+import MoonLineIcon from 'remixicon-react/MoonLineIcon'
 import { useState, useEffect, useRef } from 'react'
 
 interface FormattingMenuProps {
   editor: Editor | null
+  isDarkMode: boolean
+  onThemeToggle: () => void
 }
 
-const FormattingMenu = ({ editor }: FormattingMenuProps) => {
+const FormattingMenu = ({ editor, isDarkMode, onThemeToggle }: FormattingMenuProps) => {
   const [isVisible, setIsVisible] = useState(true)
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>()
 
@@ -111,6 +115,13 @@ const FormattingMenu = ({ editor }: FormattingMenuProps) => {
         title="Align Right"
       >
         <AlignRightIcon size={20} />
+      </button>
+      <button
+        onClick={onThemeToggle}
+        title={isDarkMode ? "Light Mode" : "Dark Mode"}
+        className="theme-toggle-button"
+      >
+        {isDarkMode ? <SunLineIcon size={20} /> : <MoonLineIcon size={20} />}
       </button>
     </div>
   )

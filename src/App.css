@@ -72,6 +72,10 @@
   background-color: rgba(255, 255, 255, 0.1);
 }
 
+.theme-toggle-button:focus {
+  outline: none;
+}
+
 .flow-container {
   width: 100vw;
   height: 100px;
